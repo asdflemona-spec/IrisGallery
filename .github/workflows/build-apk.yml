@@ -1,0 +1,85 @@
+name: Build Iris Gallery APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "IrisGallery-source.zip"
+      - ".github/workflows/build-apk.yml"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract source ZIP
+        run: |
+          mkdir -p source
+          unzip -q IrisGallery-source.zip -d source
+          echo "=== Extracted files ==="
+          ls -la source
+
+      - name: Find project root
+        id: project
+        shell: bash
+        run: |
+          GRADLEW=$(find source -type f -name gradlew | head -n 1)
+
+          if [ -z "$GRADLEW" ]; then
+            echo "gradlew not found"
+            find source -maxdepth 3 -type f | head -100
+            exit 1
+          fi
+
+          PROJECT_DIR=$(dirname "$GRADLEW")
+          echo "dir=$PROJECT_DIR" >> "$GITHUB_OUTPUT"
+          echo "Android project: $PROJECT_DIR"
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build Debug APK
+        working-directory: ${{ steps.project.outputs.dir }}
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - name: Find APK
+        id: apk
+        shell: bash
+        run: |
+          APK=$(find "${{ steps.project.outputs.dir }}" \
+            -type f \
+            -path "*/build/outputs/apk/debug/*.apk" \
+            | head -n 1)
+
+          if [ -z "$APK" ]; then
+            echo "APK not found"
+            exit 1
+          fi
+
+          mkdir -p output
+          cp "$APK" output/IrisGallery-debug.apk
+
+          echo "APK created:"
+          ls -lh output/IrisGallery-debug.apk
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: IrisGallery-debug-apk
+          path: output/IrisGallery-debug.apk
+          if-no-files-found: error
+          retention-days: 30

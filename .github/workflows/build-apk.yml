@@ -6,7 +6,7 @@ on:
     branches:
       - main
     paths:
-      - "IrisGallery-source.zip"
+      - "IrisGallery-v2-source.zip"
       - ".github/workflows/build-apk.yml"
 
 jobs:
@@ -21,7 +21,7 @@ jobs:
       - name: Extract source ZIP
         run: |
           mkdir -p source
-          unzip -q IrisGallery-source.zip -d source
+          unzip -q IrisGallery-v2-source.zip -d source
           echo "=== Extracted files ==="
           ls -la source
 
@@ -32,20 +32,25 @@ jobs:
           GRADLEW=$(find source -type f -name gradlew | head -n 1)
 
           if [ -z "$GRADLEW" ]; then
-            echo "gradlew not found"
-            find source -maxdepth 3 -type f | head -100
+            echo "ERROR: gradlew not found"
+            echo "=== Files ==="
+            find source -maxdepth 4 -type f | head -100
             exit 1
           fi
 
           PROJECT_DIR=$(dirname "$GRADLEW")
+
           echo "dir=$PROJECT_DIR" >> "$GITHUB_OUTPUT"
-          echo "Android project: $PROJECT_DIR"
+          echo "Android project found at: $PROJECT_DIR"
 
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "17"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -66,20 +71,23 @@ jobs:
             | head -n 1)
 
           if [ -z "$APK" ]; then
-            echo "APK not found"
+            echo "ERROR: APK not found"
+            find "${{ steps.project.outputs.dir }}" \
+              -path "*/build/outputs/*" \
+              -type f || true
             exit 1
           fi
 
           mkdir -p output
-          cp "$APK" output/IrisGallery-debug.apk
+          cp "$APK" output/IrisGallery-v2-debug.apk
 
-          echo "APK created:"
-          ls -lh output/IrisGallery-debug.apk
+          echo "=== APK SUCCESS ==="
+          ls -lh output/IrisGallery-v2-debug.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: IrisGallery-debug-apk
-          path: output/IrisGallery-debug.apk
+          name: IrisGallery-v2-debug-apk
+          path: output/IrisGallery-v2-debug.apk
           if-no-files-found: error
           retention-days: 30

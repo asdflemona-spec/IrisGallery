@@ -6,7 +6,7 @@ on:
     branches:
       - main
     paths:
-      - "IrisGallery-v2-source.zip"
+      - "IrisGallery-v2.1-source.zip"
       - ".github/workflows/build-apk.yml"
 
 jobs:
@@ -22,7 +22,7 @@ jobs:
         run: |
           rm -rf source
           mkdir -p source
-          unzip -q IrisGallery-v2-source.zip -d source
+          unzip -q IrisGallery-v2.1-source.zip -d source
 
           echo "=== Extracted ==="
           find source -maxdepth 2 -type f | head -50
@@ -96,15 +96,15 @@ jobs:
           fi
 
           mkdir -p output
-          cp "$APK" output/IrisGallery-v2-debug.apk
+          cp "$APK" output/IrisGallery-v2.1-debug.apk
 
           echo "=== BUILD SUCCESS ==="
-          ls -lh output/IrisGallery-v2-debug.apk
+          ls -lh output/IrisGallery-v2.1-debug.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: IrisGallery-v2-debug-apk
-          path: output/IrisGallery-v2-debug.apk
+          name: IrisGallery-v2.1-debug-apk
+          path: output/IrisGallery-v2.1-debug.apk
           if-no-files-found: error
           retention-days: 30

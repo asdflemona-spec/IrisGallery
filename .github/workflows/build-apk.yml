@@ -1,4 +1,4 @@
-8name: Build Iris Gallery APK
+name: Build Iris Gallery APK
 
 on:
   workflow_dispatch:

@@ -6,7 +6,7 @@ on:
     branches:
       - main
     paths:
-      - "IrisGallery-v7.0.2-source.zip"
+      - "IrisGallery-v7.1-Pure-Performance-source.zip"
       - ".github/workflows/build-apk.yml"
 
 jobs:
@@ -22,7 +22,7 @@ jobs:
         run: |
           rm -rf source
           mkdir -p source
-          unzip -q IrisGallery-v7.0.2-source.zip -d source
+          unzip -q IrisGallery-v7.1-Pure-Performance-source.zip -d source
 
           echo "=== Extracted ==="
           find source -maxdepth 2 -type f | head -50
